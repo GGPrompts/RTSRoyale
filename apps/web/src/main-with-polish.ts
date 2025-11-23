@@ -1,14 +1,22 @@
-// RTS Arena - Main Entry Point
+// RTS Arena - Main Entry Point with Visual Polish
 import { Application } from 'pixi.js';
 import { createWorld } from '@rts-arena/core';
-import { movementSystem, pathfindingSystem, combatSystem, selectionSystem, finalShowdownSystem, initShowdownTimer, getShowdownPhase, GameTimer, ShowdownState, abilitiesSystem } from '@rts-arena/core';
+import {
+  movementSystem,
+  pathfindingSystem,
+  combatSystem,
+  selectionSystem,
+  finalShowdownSystem,
+  initShowdownTimer,
+  getShowdownPhase,
+  GameTimer,
+  ShowdownState
+} from '@rts-arena/core';
 import { defineQuery } from 'bitecs';
 import { initTestScene } from './test-scene';
 import { InputManager } from './input-manager';
 import { SelectionRenderer } from './selection-renderer';
 import { ShowdownEffects } from './showdown-effects';
-import { initInputSystem, updateCooldownUI } from './input';
-import { initAbilityEffects, updateAbilityEffects } from './ability-effects';
 import { VisualPolishIntegration } from './visual-polish-integration';
 
 async function main() {
@@ -62,11 +70,6 @@ async function main() {
   const showdownEffects = new ShowdownEffects(app, world);
   console.log('✅ Showdown effects initialized');
 
-  // Initialize abilities system
-  initInputSystem(world);
-  initAbilityEffects(app);
-  console.log('✅ Abilities system initialized');
-
   // Initialize Visual Polish Integration
   const visualPolish = new VisualPolishIntegration(app, world);
   console.log('✨ Visual Polish systems integrated');
@@ -95,7 +98,6 @@ async function main() {
     // Run systems
     finalShowdownSystem(world);  // Run showdown system first to handle phase transitions
     pathfindingSystem(world);
-    abilitiesSystem(world);  // Run abilities before movement to apply dash velocity
     movementSystem(world);
     combatSystem(world);  // Run combat after movement
 
@@ -104,10 +106,6 @@ async function main() {
 
     // Update showdown visual effects
     showdownEffects.update(deltaTime);
-
-    // Update ability effects and UI
-    updateAbilityEffects(world, app);
-    updateCooldownUI(world);
 
     // Update visual polish systems
     visualPolish.update(world, deltaTime);
@@ -126,6 +124,7 @@ async function main() {
   });
 
   console.log('✅ Game loop started');
+  console.log('💡 Press T to test visual effects');
 }
 
 function updateUI(world: any, deltaTime: number) {
@@ -152,8 +151,7 @@ function updateUI(world: any, deltaTime: number) {
 
   document.getElementById('phase')!.textContent = phaseName;
 
-  // Phase warnings are now handled by ShowdownEffects
-  // Keep the HTML element for backward compatibility
+  // Phase warnings are now handled by ShowdownEffects and Visual Polish
   const warning = document.getElementById('phase-warning')!;
   if (warning.style.display === 'block' && currentPhase >= 3) {
     // Hide warning after showdown starts
