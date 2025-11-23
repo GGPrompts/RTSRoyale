@@ -39,7 +39,7 @@ export function dashSystem(world: any) {
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < 20.0) { // Collision range (in pixels)
-          if (!hasComponent(world, target, Health)) {
+          if (!hasComponent(world, Health, target)) {
             addComponent(world, Health, target);
             Health.current[target] = 100;
             Health.max[target] = 100;
@@ -114,7 +114,7 @@ export function rangedAttackSystem(world: any) {
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < 15.0) { // Hit range (in pixels)
-          if (!hasComponent(world, target, Health)) {
+          if (!hasComponent(world, Health, target)) {
             addComponent(world, Health, target);
             Health.current[target] = 100;
             Health.max[target] = 100;

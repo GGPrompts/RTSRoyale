@@ -23,6 +23,10 @@ import { initTestScene } from './test-scene';
 import { PerformanceMonitor } from './profiling/performanceMonitor';
 import { PerformanceDashboard } from './ui/performanceDashboard';
 import { ShowdownEffectsRenderer } from './effects/showdownEffects';
+import { SelectionManager } from './input/selectionManager';
+import { MouseInputHandler } from './input/mouseInput';
+import { SelectionRenderer } from './rendering/selectionBox';
+import { AbilityInputHandler } from './input/abilityInput';
 
 async function main() {
   console.log('🎮 RTS Arena - Initializing...');
@@ -86,6 +90,22 @@ async function main() {
   // Initialize test scene (spawn some units)
   initTestScene(world, app);
 
+  // Initialize input and selection systems
+  const selectionManager = new SelectionManager(world);
+  const mouseInputHandler = new MouseInputHandler(app, selectionManager);
+  const selectionRenderer = new SelectionRenderer();
+  const abilityInputHandler = new AbilityInputHandler(world);
+
+  // Add selection renderer to stage
+  app.stage.addChild(selectionRenderer.getContainer());
+
+  // Connect selection manager to ability handler
+  selectionManager.setMoveTargetCallback((x, y) => {
+    selectionRenderer.showMoveTarget(x, y);
+  });
+
+  console.log('✅ Input and selection systems initialized');
+
   // Game loop
   let lastTime = performance.now();
   let fpsCounter = 0;
@@ -136,6 +156,11 @@ async function main() {
     endTiming = perfMonitor.startSystem('effects');
     // Update visual effects for Final Showdown
     showdownEffects.update(world, deltaTime);
+    // Update selection visuals
+    selectionRenderer.updateDragBox(mouseInputHandler.getDragBox());
+    selectionRenderer.updateSelectionHighlights(world);
+    // Update ability input with current selection
+    abilityInputHandler.updateSelection(selectionManager.getSelectedEntities());
     endTiming();
 
     endTiming = perfMonitor.startSystem('ui');

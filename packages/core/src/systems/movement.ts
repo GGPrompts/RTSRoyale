@@ -11,6 +11,11 @@ export function movementSystem(world: GameWorld): void {
 
   // Process entities with MoveTarget
   const targetEntities = moveTargetQuery(world);
+
+  if (targetEntities.length > 0) {
+    console.log(`[Movement] Processing ${targetEntities.length} entities with MoveTarget, dt=${dt.toFixed(3)}`);
+  }
+
   for (let i = 0; i < targetEntities.length; i++) {
     const eid = targetEntities[i];
 
@@ -19,6 +24,8 @@ export function movementSystem(world: GameWorld): void {
       const dx = MoveTarget.x[eid] - Position.x[eid];
       const dy = MoveTarget.y[eid] - Position.y[eid];
       const distance = Math.sqrt(dx * dx + dy * dy);
+
+      console.log(`[Movement] Entity ${eid} moving to (${MoveTarget.x[eid].toFixed(0)}, ${MoveTarget.y[eid].toFixed(0)}), dist=${distance.toFixed(1)}`);
 
       if (distance < 5) {
         // Reached target
@@ -31,6 +38,10 @@ export function movementSystem(world: GameWorld): void {
         Velocity.x[eid] = (dx / distance) * speed;
         Velocity.y[eid] = (dy / distance) * speed;
       }
+    } else {
+      // No active move target, stop movement
+      Velocity.x[eid] = 0;
+      Velocity.y[eid] = 0;
     }
   }
 

@@ -26,6 +26,8 @@ export class SelectionManager {
     const entities = selectableQuery(this.world);
     const clickRadius = 20; // Click tolerance
 
+    console.log(`[Selection] Click at (${x.toFixed(0)}, ${y.toFixed(0)}), checking ${entities.length} entities`);
+
     // Clear previous selection
     this.clearSelection();
 
@@ -43,11 +45,15 @@ export class SelectionManager {
       const dy = Position.y[eid] - y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
+      console.log(`[Selection] Entity ${eid} at (${Position.x[eid].toFixed(0)}, ${Position.y[eid].toFixed(0)}), dist=${dist.toFixed(1)}`);
+
       if (dist < closestDist) {
         closestEntity = eid;
         closestDist = dist;
       }
     }
+
+    console.log(`[Selection] Closest entity: ${closestEntity}, dist: ${closestDist.toFixed(1)}`);
 
     if (closestEntity !== -1) {
       this.addToSelection(closestEntity);

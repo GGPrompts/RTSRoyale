@@ -1,14 +1,20 @@
 // Test scene setup - spawn units for prototyping
 import { Application, Graphics } from 'pixi.js';
-import { addEntity } from 'bitecs';
-import { Position, Velocity, Health, Team, Sprite, Damage, MoveTarget, Dead } from '@rts-arena/core';
-import { hasComponent } from 'bitecs';
-import { GameWorld } from '@rts-arena/core';
+import {
+  addEntity,
+  addComponent,
+  hasComponent,
+  Position,
+  Velocity,
+  Health,
+  Team,
+  Sprite,
+  Damage,
+  MoveTarget,
+  Dead,
+  GameWorld
+} from '@rts-arena/core';
 import { HealthBarRenderer } from './rendering/healthBars';
-import { SelectionManager } from './input/selectionManager';
-import { MouseInputHandler } from './input/mouseInput';
-import { SelectionRenderer } from './rendering/selectionBox';
-import { AbilityInputHandler } from './input/abilityInput';
 import { AbilityEffectsRenderer } from './effects/abilityEffects';
 
 export function initTestScene(world: GameWorld, app: Application) {
@@ -20,6 +26,15 @@ export function initTestScene(world: GameWorld, app: Application) {
   // Spawn test units for Team 0 (Blue)
   for (let i = 0; i < 10; i++) {
     const eid = addEntity(world);
+
+    // Add all components first (BitECS 0.4.x: world, Component, eid)
+    addComponent(world, Position, eid);
+    addComponent(world, Velocity, eid);
+    addComponent(world, Health, eid);
+    addComponent(world, Team, eid);
+    addComponent(world, Sprite, eid);
+    addComponent(world, Damage, eid);
+    addComponent(world, MoveTarget, eid);
 
     Position.x[eid] = 200 + i * 50;
     Position.y[eid] = 300;
@@ -43,10 +58,10 @@ export function initTestScene(world: GameWorld, app: Application) {
     Damage.attackSpeed[eid] = 1.0; // 1 attack per second
     Damage.cooldown[eid] = 0;
 
-    // Set move target toward center-right (for combat testing)
-    MoveTarget.x[eid] = 960;
-    MoveTarget.y[eid] = 540;
-    MoveTarget.active[eid] = 1;
+    // Initialize move target (inactive by default)
+    MoveTarget.x[eid] = 0;
+    MoveTarget.y[eid] = 0;
+    MoveTarget.active[eid] = 0;
 
     // Create visual (using Graphics for now, replace with actual sprites later)
     const visual = createUnitGraphic(0);
@@ -59,6 +74,15 @@ export function initTestScene(world: GameWorld, app: Application) {
   // Spawn test units for Team 1 (Red)
   for (let i = 0; i < 10; i++) {
     const eid = addEntity(world);
+
+    // Add all components first (BitECS 0.4.x: world, Component, eid)
+    addComponent(world, Position, eid);
+    addComponent(world, Velocity, eid);
+    addComponent(world, Health, eid);
+    addComponent(world, Team, eid);
+    addComponent(world, Sprite, eid);
+    addComponent(world, Damage, eid);
+    addComponent(world, MoveTarget, eid);
 
     Position.x[eid] = 1720 - i * 50;
     Position.y[eid] = 780;
@@ -82,10 +106,10 @@ export function initTestScene(world: GameWorld, app: Application) {
     Damage.attackSpeed[eid] = 1.0; // 1 attack per second
     Damage.cooldown[eid] = 0;
 
-    // Set move target toward center-left (for combat testing)
-    MoveTarget.x[eid] = 960;
-    MoveTarget.y[eid] = 540;
-    MoveTarget.active[eid] = 1;
+    // Initialize move target (inactive by default)
+    MoveTarget.x[eid] = 0;
+    MoveTarget.y[eid] = 0;
+    MoveTarget.active[eid] = 0;
 
     // Create visual
     const visual = createUnitGraphic(1);
@@ -102,26 +126,12 @@ export function initTestScene(world: GameWorld, app: Application) {
   const healthBarRenderer = new HealthBarRenderer();
   app.stage.addChild(healthBarRenderer.getContainer());
 
-  // Create selection system
-  const selectionManager = new SelectionManager(world);
-  const mouseInputHandler = new MouseInputHandler(app, selectionManager);
-  const selectionRenderer = new SelectionRenderer();
-  app.stage.addChild(selectionRenderer.getContainer());
-
-  // Set up move target visual feedback
-  selectionManager.setMoveTargetCallback((x, y) => {
-    selectionRenderer.showMoveTarget(x, y);
-  });
-
-  // Create ability system
-  const abilityInputHandler = new AbilityInputHandler(world);
+  // Create ability effects renderer (input systems are now in main.ts)
   const abilityEffectsRenderer = new AbilityEffectsRenderer();
   abilityEffectsRenderer.setWorld(world);
   app.stage.addChild(abilityEffectsRenderer.getContainer());
 
-  // Store references for other systems to access
-  (world as any).selectionManager = selectionManager;
-  (world as any).abilityInputHandler = abilityInputHandler;
+  // Store reference for other systems to access
   (world as any).abilityEffectsRenderer = abilityEffectsRenderer;
 
   // Simple render update (hook into game loop later)
@@ -144,15 +154,8 @@ export function initTestScene(world: GameWorld, app: Application) {
     // Update health bars
     healthBarRenderer.update(world);
 
-    // Update selection visuals
-    selectionRenderer.updateDragBox(mouseInputHandler.getDragBox());
-    selectionRenderer.updateSelectionHighlights(world);
-
     // Update ability effects
     abilityEffectsRenderer.update(world);
-
-    // Sync ability input with selection
-    abilityInputHandler.updateSelection(selectionManager.getSelectedEntities());
   });
 
   console.log(`✅ Spawned ${unitSprites.size} units`);
