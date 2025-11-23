@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RTS Arena - Prototype</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #1a1a1a;
+        color: #ffffff;
+        overflow: hidden;
+      }
+
+      #app {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #game-container {
+        flex: 1;
+        position: relative;
+        background: #0a0a0a;
+      }
+
+      #ui-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+      }
+
+      #ui-top {
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        padding: 10px 20px;
+        border-radius: 8px;
+        pointer-events: all;
+      }
+
+      #timer {
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      #phase-warning {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 48px;
+        font-weight: bold;
+        color: #ff4444;
+        text-shadow: 0 0 20px rgba(255, 68, 68, 0.8);
+        display: none;
+        pointer-events: none;
+      }
+
+      #stats {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-family: monospace;
+      }
+
+      .stat-line {
+        margin-bottom: 4px;
+      }
+
+      #debug-info {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-family: monospace;
+        max-width: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="game-container">
+        <!-- Pixi.js canvas will be inserted here -->
+      </div>
+
+      <div id="ui-overlay">
+        <div id="ui-top">
+          <div id="timer">2:30</div>
+        </div>
+
+        <div id="phase-warning"></div>
+
+        <div id="stats">
+          <div class="stat-line">FPS: <span id="fps">60</span></div>
+          <div class="stat-line">Entities: <span id="entity-count">0</span></div>
+          <div class="stat-line">Phase: <span id="phase">normal</span></div>
+        </div>
+
+        <div id="debug-info">
+          <div>Click: Select unit</div>
+          <div>Right-click: Move</div>
+          <div>Drag: Box select</div>
+          <div>Q/W/E: Abilities (TODO)</div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

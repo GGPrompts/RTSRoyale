@@ -1,0 +1,21 @@
+{
+  "name": "rts-arena-web",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@rts-arena/client": "*",
+    "@rts-arena/core": "*",
+    "@rts-arena/types": "*",
+    "pixi.js": "^8.0.0",
+    "bitecs": "^0.3.40"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0",
+    "typescript": "^5.6.0"
+  }
+}
