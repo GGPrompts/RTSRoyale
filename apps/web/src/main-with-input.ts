@@ -1,19 +1,21 @@
-// RTS Arena - Main Entry Point
-import { Application } from 'pixi.js';
+// RTS Arena - Main Entry Point with Input Controls
+import { Application, Container } from 'pixi.js';
 import { createWorld } from '@rts-arena/core';
-import {
-  movementSystem, pathfindingSystem, combatSystem, finalShowdownSystem,
-  abilitySystem, projectileSystem
-} from '@rts-arena/core';
+import { movementSystem, pathfindingSystem, combatSystem, finalShowdownSystem } from '@rts-arena/core';
 import { initTestScene } from './test-scene';
 import { initHealthBars, updateHealthBars, initDamageNumbers, updateDamageNumbers } from './rendering';
 import { initScreenEffects, updatePhaseEffects, showWarningMessage } from './effects';
-import { initInput, updateInput, getInput } from './input';
-import { initAbilityEffects, renderAbilityEffects } from './ability-effects';
-import { initAbilitiesUI, updateAbilitiesUI, showAbilityActivation } from './ui/abilities-ui';
+
+// Input systems
+import { MouseInput } from './input/mouse';
+import { KeyboardInput } from './input/keyboard';
+import { SelectionManager } from './selection/selection';
+import { BoxSelect } from './selection/box-select';
+import { Camera } from './camera';
+import { SelectionIndicators } from './rendering/selection-indicators';
 
 async function main() {
-  console.log('🎮 RTS Arena - Initializing...');
+  console.log('🎮 RTS Arena - Initializing with Input Controls...');
 
   // Create Pixi.js application
   const app = new Application();
@@ -47,8 +49,12 @@ async function main() {
   const world = createWorld();
   console.log('✅ ECS World created');
 
+  // Create viewport container for camera
+  const viewport = new Container();
+  app.stage.addChild(viewport);
+
   // Initialize test scene (spawn some units)
-  initTestScene(world, app);
+  initTestScene(world, app, viewport);
 
   // Initialize rendering systems
   initHealthBars(app);
@@ -57,26 +63,74 @@ async function main() {
   // Initialize screen effects for Final Showdown
   initScreenEffects(app);
 
-  // Initialize input system
-  initInput(app.canvas as HTMLCanvasElement);
+  // Initialize input systems
+  const camera = new Camera(app, viewport);
+  const selectionManager = new SelectionManager(world, app);
+  const boxSelect = new BoxSelect(app);
+  const mouseInput = new MouseInput(app, world, selectionManager, boxSelect);
+  const keyboardInput = new KeyboardInput(world, selectionManager, camera);
+  const selectionIndicators = new SelectionIndicators(app, world);
 
-  // Initialize ability effects and UI
-  initAbilityEffects(app);
-  initAbilitiesUI(app);
+  console.log('✅ Input systems initialized');
+  console.log('');
+  console.log('📝 RTS CONTROLS:');
+  console.log('  SELECTION:');
+  console.log('    • Left-click: Select single unit');
+  console.log('    • Shift + Left-click: Add to selection');
+  console.log('    • Click + Drag: Box select multiple units');
+  console.log('    • Shift + Box select: Add to selection');
+  console.log('');
+  console.log('  CONTROL GROUPS:');
+  console.log('    • Ctrl + 1-9: Assign selection to group');
+  console.log('    • 1-9: Recall control group');
+  console.log('    • Double-tap 1-9: Jump camera to group');
+  console.log('');
+  console.log('  ORDERS:');
+  console.log('    • Right-click ground: Move units');
+  console.log('    • Right-click enemy: Attack move');
+  console.log('');
+  console.log('  CAMERA:');
+  console.log('    • WASD/Arrow keys: Pan camera');
+  console.log('    • Mouse wheel: Zoom in/out');
+  console.log('    • Middle-click drag: Pan camera');
+  console.log('    • Edge scrolling: Move mouse to edge');
+  console.log('');
+  console.log('  DEBUG (existing):');
+  console.log('    • 0: Normal speed');
+  console.log('    • 1-4: Speed up time (10x, 25x, 50x, 100x)');
+  console.log('    • 5: Jump to next phase');
+  console.log('    • R: Reset game');
+
+  // Center camera on the arena
+  camera.centerOn(960, 540, true); // Center of 1920x1080
 
   // Game loop
   let lastTime = performance.now();
   let fpsCounter = 0;
   let fpsTime = 0;
+  let mouseX = 0;
+  let mouseY = 0;
 
-  // Time control for testing (press 1-5 to change speed, 0 to reset)
+  // Track mouse position for edge scrolling
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  // Time control for testing (preserve existing functionality)
   let timeMultiplier = 1.0;
   window.addEventListener('keydown', (e) => {
+    // Prevent control group keys from affecting time control
+    if (!e.ctrlKey && e.key >= '1' && e.key <= '9') {
+      // Control group recall - handled by KeyboardInput
+      return;
+    }
+
     if (e.key === '0') timeMultiplier = 1.0;
-    else if (e.key === '1') timeMultiplier = 10.0;  // 10x speed
-    else if (e.key === '2') timeMultiplier = 25.0;  // 25x speed
-    else if (e.key === '3') timeMultiplier = 50.0;  // 50x speed
-    else if (e.key === '4') timeMultiplier = 100.0; // 100x speed
+    else if (!e.ctrlKey && e.key === '1') timeMultiplier = 10.0;  // 10x speed
+    else if (!e.ctrlKey && e.key === '2') timeMultiplier = 25.0;  // 25x speed
+    else if (!e.ctrlKey && e.key === '3') timeMultiplier = 50.0;  // 50x speed
+    else if (!e.ctrlKey && e.key === '4') timeMultiplier = 100.0; // 100x speed
     else if (e.key === '5') {
       // Jump to specific phase for testing
       if (world.time < 119) world.time = 119;      // Jump to warning
@@ -85,13 +139,13 @@ async function main() {
       else if (world.time < 144) world.time = 144;  // Jump to prepare
       else if (world.time < 149) world.time = 149;  // Jump to showdown
     }
-    else if (e.key === 'r') {
+    else if (e.key === 'r' || e.key === 'R') {
       // Reset game
       world.time = 0;
       location.reload();
     }
 
-    if (e.key >= '0' && e.key <= '4') {
+    if (e.key >= '0' && e.key <= '4' && !e.ctrlKey) {
       console.log(`⏱️ Time multiplier set to ${timeMultiplier}x`);
     }
   });
@@ -107,45 +161,29 @@ async function main() {
     world.deltaTime = deltaTime;
     world.time += deltaTime;
 
-    // Update input once per frame
-    updateInput();
-    const input = getInput();
+    // Update camera
+    camera.update(mouseX, mouseY);
 
-    // Prepare ability input for the system
-    const abilityInput = {
-      qPressed: input.qPressed,
-      wPressed: input.wPressed,
-      ePressed: input.ePressed,
-      mouseX: input.mouseX,
-      mouseY: input.mouseY,
-    };
-
-    // Show visual feedback when abilities are used
-    if (input.qPressed) showAbilityActivation('q');
-    if (input.wPressed) showAbilityActivation('w');
-    if (input.ePressed) showAbilityActivation('e');
+    // Update selection manager
+    selectionManager.update();
 
     // Run systems
     finalShowdownSystem(world); // Check phase transitions first
     pathfindingSystem(world);
-    abilitySystem(world, abilityInput); // Process abilities before movement
-    projectileSystem(world); // Move projectiles
     movementSystem(world);
     combatSystem(world); // Combat after movement
 
     // Update rendering
     updateHealthBars(world);
     updateDamageNumbers(world, deltaTime);
-    renderAbilityEffects(world, app);
-    updateAbilitiesUI(world);
 
     // Clear event arrays after processing
     if (world.deadEntities) {
       world.deadEntities = [];
     }
 
-    // Update UI
-    updateUI(world, deltaTime, app);
+    // Update UI with selection info
+    updateUI(world, deltaTime, app, selectionManager);
 
     // FPS counter
     fpsCounter++;
@@ -160,7 +198,7 @@ async function main() {
   console.log('✅ Game loop started');
 }
 
-function updateUI(world: any, deltaTime: number, app: Application) {
+function updateUI(world: any, deltaTime: number, app: Application, selectionManager?: SelectionManager) {
   // Update timer
   const timeRemaining = Math.max(0, 150 - world.time); // 2:30 match
   const minutes = Math.floor(timeRemaining / 60);
@@ -186,6 +224,15 @@ function updateUI(world: any, deltaTime: number, app: Application) {
     world.phaseMessage = '';
   }
 
+  // Update selection count if selection manager is available
+  if (selectionManager) {
+    const selectionCount = selectionManager.getSelectionCount();
+    const entityCountElem = document.getElementById('entity-count');
+    if (entityCountElem) {
+      entityCountElem.textContent = `Selected: ${selectionCount}`;
+    }
+  }
+
   // Check for victory
   if (world.gameOver) {
     const winnerText = world.winner === 0 ? 'BLUE TEAM WINS!' :
@@ -196,13 +243,6 @@ function updateUI(world: any, deltaTime: number, app: Application) {
     warning.style.display = 'block';
     warning.style.fontSize = '72px';
     warning.style.color = world.winner === 0 ? '#4444ff' : '#ff4444';
-  }
-
-  // Add showdown class for dramatic effect
-  if (phase === 'showdown') {
-    document.getElementById('app')!.classList.add('showdown-active');
-  } else {
-    document.getElementById('app')!.classList.remove('showdown-active');
   }
 }
 

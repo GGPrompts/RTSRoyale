@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RTS Arena - Enhanced Visual Experience</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+      color: #ffffff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    #header {
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #333;
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+    }
+
+    #title {
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(68, 136, 255, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #title::before {
+      content: "⚔️";
+      font-size: 28px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    #stats {
+      display: flex;
+      gap: 30px;
+      font-size: 14px;
+    }
+
+    .stat-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 5px 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+    }
+
+    #fps {
+      text-shadow: 0 0 5px currentColor;
+    }
+
+    #timer {
+      font-size: 24px;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    #phase {
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: all 0.3s ease;
+    }
+
+    .phase-normal {
+      background: linear-gradient(135deg, #4488ff, #2266dd);
+      box-shadow: 0 0 20px rgba(68, 136, 255, 0.5);
+    }
+
+    .phase-warning {
+      background: linear-gradient(135deg, #ffaa00, #ff8800);
+      box-shadow: 0 0 20px rgba(255, 170, 0, 0.5);
+      animation: warning-pulse 1s infinite;
+    }
+
+    .phase-collapse {
+      background: linear-gradient(135deg, #ff6600, #ff3300);
+      box-shadow: 0 0 20px rgba(255, 102, 0, 0.5);
+      animation: collapse-pulse 0.5s infinite;
+    }
+
+    .phase-showdown {
+      background: linear-gradient(135deg, #ff0000, #aa0000);
+      box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+      animation: showdown-pulse 0.3s infinite;
+    }
+
+    @keyframes warning-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes collapse-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+
+    @keyframes showdown-pulse {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.15) rotate(2deg); }
+    }
+
+    #game-container {
+      flex: 1;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(ellipse at center, rgba(68, 136, 255, 0.1) 0%, transparent 70%);
+    }
+
+    #game-container canvas {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+      border: 2px solid #222;
+    }
+
+    #phase-warning {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 48px;
+      font-weight: bold;
+      text-align: center;
+      text-shadow:
+        0 0 20px currentColor,
+        0 0 40px currentColor,
+        0 0 60px currentColor;
+      z-index: 1000;
+      display: none;
+      pointer-events: none;
+      animation: fade-in 0.5s ease;
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    .warning-pulse {
+      color: #ffaa00;
+      animation: text-pulse 1s infinite;
+    }
+
+    .collapse-pulse {
+      color: #ff6600;
+      animation: text-pulse 0.5s infinite;
+    }
+
+    .showdown-pulse {
+      color: #ff0000;
+      animation: text-pulse 0.3s infinite, shake 0.1s infinite;
+    }
+
+    @keyframes text-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translate(-50%, -50%) translateX(0); }
+      25% { transform: translate(-50%, -50%) translateX(-5px); }
+      75% { transform: translate(-50%, -50%) translateX(5px); }
+    }
+
+    #debug-info {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.4;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+
+    #debug-info:hover {
+      opacity: 1;
+    }
+
+    #controls {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+
+    #controls:hover {
+      opacity: 1;
+    }
+
+    .control-header {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #4488ff;
+    }
+
+    .control-item {
+      margin: 2px 0;
+      color: #aaa;
+    }
+
+    .control-key {
+      color: #ffaa00;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      #header {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      #stats {
+        flex-wrap: wrap;
+      }
+
+      #phase-warning {
+        font-size: 32px;
+      }
+
+      #debug-info,
+      #controls {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <div id="title">RTS ARENA</div>
+    <div id="stats">
+      <div class="stat-group">
+        <span class="stat-label">FPS</span>
+        <span class="stat-value" id="fps">60</span>
+      </div>
+      <div class="stat-group">
+        <span class="stat-label">Frame Time</span>
+        <span class="stat-value" id="frame-time">16.7ms</span>
+      </div>
+      <div class="stat-group">
+        <span class="stat-label">Time</span>
+        <span class="stat-value" id="timer">2:30</span>
+      </div>
+      <div class="stat-group">
+        <span class="stat-label">Units</span>
+        <span class="stat-value" id="entity-count">0</span>
+      </div>
+      <div class="stat-group">
+        <span class="stat-label">Particles</span>
+        <span class="stat-value" id="particle-count">0</span>
+      </div>
+      <div id="phase" class="phase-normal">NORMAL</div>
+    </div>
+  </div>
+
+  <div id="game-container">
+    <div id="phase-warning"></div>
+  </div>
+
+  <div id="debug-info">
+    <div>Renderer: <span id="renderer-type">WebGL</span></div>
+    <div>Draw Calls: <span id="draw-calls">0</span></div>
+    <div>Resolution: <span id="resolution">1920x1080</span></div>
+    <div id="particle-count">Particles: 0</div>
+  </div>
+
+  <div id="controls">
+    <div class="control-header">🎮 Controls</div>
+    <div class="control-item"><span class="control-key">Mouse Wheel</span> - Zoom</div>
+    <div class="control-item"><span class="control-key">Middle Drag</span> - Pan</div>
+    <div class="control-item"><span class="control-key">WASD/Arrows</span> - Move</div>
+    <div class="control-header" style="margin-top: 8px;">🔧 Debug</div>
+    <div class="control-item"><span class="control-key">1</span> - Camera Shake</div>
+    <div class="control-item"><span class="control-key">2</span> - Flash</div>
+    <div class="control-item"><span class="control-key">3</span> - Vignette</div>
+    <div class="control-item"><span class="control-key">4</span> - Explosion</div>
+    <div class="control-item"><span class="control-key">5</span> - Showdown</div>
+    <div class="control-item"><span class="control-key">R</span> - Reset Cam</div>
+  </div>
+
+  <script type="module" src="/src/main-enhanced.ts"></script>
+</body>
+</html>

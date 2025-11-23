@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Combat System Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #0f0;
+            padding: 20px;
+        }
+        #log {
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid #0f0;
+            padding: 10px;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Combat System Test</h1>
+    <div id="log"></div>
+
+    <script type="module">
+        const log = document.getElementById('log');
+
+        function addLog(msg) {
+            const time = new Date().toLocaleTimeString();
+            log.textContent += `[${time}] ${msg}\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        addLog('Starting combat system test...');
+
+        // Test combat logic
+        const units = [
+            {id: 1, team: 0, x: 100, y: 100, health: 100, damage: 10, range: 150},
+            {id: 2, team: 0, x: 120, y: 100, health: 100, damage: 10, range: 150},
+            {id: 3, team: 1, x: 200, y: 100, health: 100, damage: 10, range: 150},
+            {id: 4, team: 1, x: 220, y: 100, health: 100, damage: 10, range: 150},
+        ];
+
+        addLog(`Created ${units.length} units`);
+
+        // Simulate combat
+        function simulateCombat() {
+            for (const attacker of units) {
+                if (attacker.health <= 0) continue;
+
+                // Find nearest enemy
+                let nearestEnemy = null;
+                let nearestDist = Infinity;
+
+                for (const target of units) {
+                    if (target.health <= 0) continue;
+                    if (target.team === attacker.team) continue;
+
+                    const dx = target.x - attacker.x;
+                    const dy = target.y - attacker.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist <= attacker.range && dist < nearestDist) {
+                        nearestEnemy = target;
+                        nearestDist = dist;
+                    }
+                }
+
+                if (nearestEnemy) {
+                    nearestEnemy.health -= attacker.damage;
+                    addLog(`Unit ${attacker.id} (team ${attacker.team}) attacks Unit ${nearestEnemy.id} for ${attacker.damage} damage. Health: ${nearestEnemy.health}`);
+
+                    if (nearestEnemy.health <= 0) {
+                        addLog(`Unit ${nearestEnemy.id} has been killed!`);
+                    }
+                }
+            }
+        }
+
+        // Run combat for 10 rounds
+        for (let i = 0; i < 10; i++) {
+            addLog(`\n--- Round ${i + 1} ---`);
+            simulateCombat();
+
+            const aliveTeam0 = units.filter(u => u.team === 0 && u.health > 0).length;
+            const aliveTeam1 = units.filter(u => u.team === 1 && u.health > 0).length;
+
+            addLog(`Team 0: ${aliveTeam0} alive, Team 1: ${aliveTeam1} alive`);
+
+            if (aliveTeam0 === 0 || aliveTeam1 === 0) {
+                addLog(`\nCombat ended! Winner: Team ${aliveTeam0 > 0 ? 0 : 1}`);
+                break;
+            }
+        }
+
+        addLog('\nTest complete! Opening main game at http://localhost:3000');
+
+        // Also show link to main game
+        setTimeout(() => {
+            window.location.href = 'http://localhost:3000';
+        }, 3000);
+    </script>
+</body>
+</html>

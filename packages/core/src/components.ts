@@ -77,6 +77,38 @@ export const Teleporting = defineComponent({
   endTime: Types.f32,
 });
 
+// Projectile component for ranged attacks
+export const Projectile = defineComponent({
+  damage: Types.f32,
+  targetX: Types.f32,
+  targetY: Types.f32,
+  speed: Types.f32,
+  ownerTeam: Types.ui8,
+  lifetime: Types.f32, // Time before expiry
+});
+
+// Visual effect tracking
+export const VisualEffect = defineComponent({
+  type: Types.ui8, // 0=dash trail, 1=shield bubble, 2=projectile trail, 3=explosion
+  duration: Types.f32,
+  maxDuration: Types.f32,
+  alpha: Types.f32,
+});
+
+// Ability state tracking
+export const AbilityState = defineComponent({
+  lastDashTime: Types.f32,
+  lastShieldTime: Types.f32,
+  lastRangedTime: Types.f32,
+  shieldEndTime: Types.f32, // When shield buff expires
+  damageReduction: Types.f32, // Current damage reduction (0.5 = 50%)
+});
+
+// Facing direction for dash
+export const Facing = defineComponent({
+  angle: Types.f32, // Radians
+});
+
 // Register all components helper
 export const ALL_COMPONENTS = [
   Position,
@@ -92,4 +124,8 @@ export const ALL_COMPONENTS = [
   Selected,
   Dead,
   Teleporting,
+  Projectile,
+  VisualEffect,
+  AbilityState,
+  Facing,
 ];

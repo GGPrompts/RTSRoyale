@@ -1,7 +1,10 @@
 // Test scene setup - spawn units for prototyping
 import { Application, Graphics } from 'pixi.js';
 import { addEntity } from 'bitecs';
-import { Position, Velocity, Health, Team, Sprite } from '@rts-arena/core';
+import {
+  Position, Velocity, Health, Team, Sprite, Damage,
+  Selected, Dash, Shield, RangedAttack, AbilityState, Facing
+} from '@rts-arena/core';
 import { GameWorld } from '@rts-arena/core';
 
 export function initTestScene(world: GameWorld, app: Application) {
@@ -14,8 +17,9 @@ export function initTestScene(world: GameWorld, app: Application) {
   for (let i = 0; i < 10; i++) {
     const eid = addEntity(world);
 
-    Position.x[eid] = 200 + i * 50;
-    Position.y[eid] = 300;
+    // Spawn in a cluster for testing combat
+    Position.x[eid] = 600 + (i % 5) * 25;
+    Position.y[eid] = 500 + Math.floor(i / 5) * 25;
 
     Velocity.x[eid] = 0;
     Velocity.y[eid] = 0;
@@ -24,6 +28,39 @@ export function initTestScene(world: GameWorld, app: Application) {
     Health.max[eid] = 100;
 
     Team.id[eid] = 0; // Team 0 (Blue)
+
+    // Combat stats
+    Damage.amount[eid] = 10;
+    Damage.range[eid] = 150; // Increased range for testing
+    Damage.attackSpeed[eid] = 1.0; // 1 attack per second
+    Damage.cooldown[eid] = 0;
+
+    // Ability components
+    Dash.cooldown[eid] = 0;
+    Dash.maxCooldown[eid] = 10;
+    Dash.distance[eid] = 5;
+    Dash.damage[eid] = 30;
+
+    Shield.cooldown[eid] = 0;
+    Shield.maxCooldown[eid] = 15;
+    Shield.duration[eid] = 3;
+    Shield.active[eid] = 0;
+
+    RangedAttack.cooldown[eid] = 0;
+    RangedAttack.maxCooldown[eid] = 8;
+    RangedAttack.range[eid] = 10;
+    RangedAttack.damage[eid] = 40;
+
+    AbilityState.lastDashTime[eid] = -100; // Start ready
+    AbilityState.lastShieldTime[eid] = -100;
+    AbilityState.lastRangedTime[eid] = -100;
+    AbilityState.shieldEndTime[eid] = 0;
+    AbilityState.damageReduction[eid] = 0;
+
+    Facing.angle[eid] = 0;
+
+    // Selection (select first blue unit by default)
+    Selected.value[eid] = i === 0 ? 1 : 0;
 
     Sprite.textureId[eid] = 0;
     Sprite.scaleX[eid] = 1.0;
@@ -42,8 +79,9 @@ export function initTestScene(world: GameWorld, app: Application) {
   for (let i = 0; i < 10; i++) {
     const eid = addEntity(world);
 
-    Position.x[eid] = 1720 - i * 50;
-    Position.y[eid] = 780;
+    // Spawn in a cluster for testing combat - close to blue team
+    Position.x[eid] = 700 + (i % 5) * 25;
+    Position.y[eid] = 500 + Math.floor(i / 5) * 25;
 
     Velocity.x[eid] = 0;
     Velocity.y[eid] = 0;
@@ -52,6 +90,38 @@ export function initTestScene(world: GameWorld, app: Application) {
     Health.max[eid] = 100;
 
     Team.id[eid] = 1; // Team 1 (Red)
+
+    // Combat stats
+    Damage.amount[eid] = 10;
+    Damage.range[eid] = 150; // Increased range for testing
+    Damage.attackSpeed[eid] = 1.0; // 1 attack per second
+    Damage.cooldown[eid] = 0;
+
+    // Ability components
+    Dash.cooldown[eid] = 0;
+    Dash.maxCooldown[eid] = 10;
+    Dash.distance[eid] = 5;
+    Dash.damage[eid] = 30;
+
+    Shield.cooldown[eid] = 0;
+    Shield.maxCooldown[eid] = 15;
+    Shield.duration[eid] = 3;
+    Shield.active[eid] = 0;
+
+    RangedAttack.cooldown[eid] = 0;
+    RangedAttack.maxCooldown[eid] = 8;
+    RangedAttack.range[eid] = 10;
+    RangedAttack.damage[eid] = 40;
+
+    AbilityState.lastDashTime[eid] = -100; // Start ready
+    AbilityState.lastShieldTime[eid] = -100;
+    AbilityState.lastRangedTime[eid] = -100;
+    AbilityState.shieldEndTime[eid] = 0;
+    AbilityState.damageReduction[eid] = 0;
+
+    Facing.angle[eid] = 0;
+
+    Selected.value[eid] = 0; // Not selected
 
     Sprite.textureId[eid] = 1;
     Sprite.scaleX[eid] = 1.0;

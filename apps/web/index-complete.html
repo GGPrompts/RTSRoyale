@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RTS Arena - Complete Prototype</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: #000;
+      color: #00ff00;
+      overflow: hidden;
+    }
+
+    #game-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    #ui-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    #timer {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 48px;
+      font-weight: bold;
+      color: #00ff00;
+      text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+    }
+
+    #fps {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      color: #00ff00;
+    }
+
+    #phase-warning {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 64px;
+      font-weight: bold;
+      color: #ff0000;
+      text-shadow:
+        0 0 10px #ff0000,
+        0 0 20px #ff0000,
+        0 0 40px #ff0000;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    #controls {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      font-size: 14px;
+      color: #00ff00;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      line-height: 1.6;
+    }
+
+    #controls h3 {
+      margin-bottom: 5px;
+      color: #00ffff;
+    }
+
+    .control-group {
+      margin-top: 8px;
+    }
+
+    .label {
+      color: #ffaa00;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container"></div>
+
+  <div id="ui-overlay">
+    <div id="timer">2:30</div>
+    <div id="fps">60 FPS</div>
+    <div id="phase-warning"></div>
+
+    <div id="controls">
+      <h3>🎮 RTS Arena - Complete Build</h3>
+      <div class="control-group">
+        <span class="label">Selection:</span> Left-click, Drag, Shift+Click
+      </div>
+      <div class="control-group">
+        <span class="label">Move:</span> Right-click
+      </div>
+      <div class="control-group">
+        <span class="label">Abilities:</span> Q (Dash), W (Shield), E (Ranged)
+      </div>
+      <div class="control-group">
+        <span class="label">Groups:</span> Ctrl+1-9 (assign), 1-9 (recall)
+      </div>
+      <div class="control-group">
+        <span class="label">Camera:</span> WASD, Mouse Wheel
+      </div>
+      <div class="control-group">
+        <span class="label">Debug:</span> 0-4 (speed), 5 (next phase), R (reset), F3 (stats)
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main-complete.ts"></script>
+</body>
+</html>
